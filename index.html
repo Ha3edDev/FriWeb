@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRIDAY OS — هاب مرکزی</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Vazirmatn:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e8000d;
+    --red-dim: #8b0008;
+    --red-glow: #ff002244;
+    --black: #060606;
+    --dark: #0e0e0e;
+    --card: #111111;
+    --border: #1e1e1e;
+    --text: #c8c8c8;
+    --text-dim: #555;
+    --white: #f0f0f0;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-display: 'Bebas Neue', cursive;
+    --font-fa: 'Vazirmatn', sans-serif;
+  }
+
+  /* ─── LIGHT THEME ─── */
+  [data-theme="light"] {
+    --black: #f5f0ee;
+    --dark: #ede8e5;
+    --card: #ffffff;
+    --border: #ddd5d0;
+    --text: #333;
+    --text-dim: #888;
+    --white: #111;
+    --red-glow: #e8000d33;
+  }
+
+  /* ─── RESET ─── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--font-fa);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: crosshair;
+    transition: background 0.4s, color 0.4s;
+  }
+  a { text-decoration: none; color: inherit; }
+
+  /* ─── SCANLINES ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── CANVAS BACKGROUND ─── */
+  #bg-canvas {
+    position: fixed; inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ─── NOISE OVERLAY ─── */
+  .noise {
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  /* ─── WRAPPER ─── */
+  .wrapper { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+  /* ─── GLITCH TEXT ─── */
+  .glitch {
+    position: relative;
+    font-family: var(--font-display);
+    color: var(--white);
+    display: inline-block;
+  }
+  .glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    font-family: var(--font-display);
+  }
+  .glitch::before {
+    color: var(--red);
+    animation: glitch1 3s infinite;
+    clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+  }
+  .glitch::after {
+    color: #00ffff;
+    animation: glitch2 3s infinite;
+    clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+  }
+  @keyframes glitch1 {
+    0%,94%,100% { transform: none; opacity: 0; }
+    95% { transform: translateX(-4px); opacity: 0.7; }
+    97% { transform: translateX(4px); opacity: 0.7; }
+  }
+  @keyframes glitch2 {
+    0%,92%,100% { transform: none; opacity: 0; }
+    93% { transform: translateX(4px); opacity: 0.7; }
+    96% { transform: translateX(-3px); opacity: 0.7; }
+  }
+
+  /* ─── HEADER / HERO ─── */
+  header {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center;
+    padding: 80px 20px 40px;
+    position: relative;
+  }
+
+  .logo-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    padding: 6px 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 4px;
+    margin-bottom: 30px;
+    animation: fadeUp 1s ease both;
+  }
+  .logo-badge .dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(72px, 16vw, 160px);
+    line-height: 0.9;
+    color: var(--white);
+    letter-spacing: -2px;
+    animation: fadeUp 1s 0.2s ease both;
+    text-shadow: 0 0 40px var(--red-glow);
+  }
+  .hero-title span { color: var(--red); }
+
+  .hero-sub {
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 2vw, 16px);
+    color: var(--text-dim);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-top: 16px;
+    animation: fadeUp 1s 0.4s ease both;
+  }
+
+  .hero-desc {
+    max-width: 520px;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 2;
+    margin-top: 24px;
+    animation: fadeUp 1s 0.6s ease both;
+    direction: rtl;
+  }
+
+  .hero-cta {
+    display: flex; gap: 14px; margin-top: 36px; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp 1s 0.8s ease both;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    padding: 14px 32px;
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: 2px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 20px var(--red-glow);
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 6px 30px var(--red-glow); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--white);
+    border: 1px solid var(--border);
+    padding: 14px 32px;
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: 2px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--red); color: var(--red); }
+
+  .scroll-hint {
+    position: absolute; bottom: 30px;
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--text-dim); letter-spacing: 3px;
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(8px)} }
+
+  /* ─── LIVE BAR ─── */
+  .live-bar {
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .live-bar-inner {
+    display: flex; align-items: center; gap: 40px;
+    animation: marquee 30s linear infinite;
+    white-space: nowrap;
+    font-family: var(--font-mono); font-size: 12px; color: var(--text-dim);
+  }
+  .live-bar-inner span { color: var(--red); font-weight: bold; }
+  @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+  /* ─── CLOCK WIDGET ─── */
+  .clock-section {
+    padding: 60px 0;
+  }
+  .clock-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media(max-width:600px){ .clock-grid{grid-template-columns:1fr;} }
+
+  .clock-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .clock-card:hover { border-color: var(--red); }
+  .clock-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--red);
+  }
+  .clock-label {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--text-dim); letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .clock-time {
+    font-family: var(--font-display);
+    font-size: clamp(42px, 8vw, 72px);
+    color: var(--white);
+    line-height: 1;
+    text-shadow: 0 0 20px var(--red-glow);
+  }
+  .clock-date {
+    font-family: var(--font-fa);
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+  .quote-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: border-color 0.3s;
+    cursor: pointer;
+    position: relative; overflow: hidden;
+  }
+  .quote-card:hover { border-color: var(--red); }
+  .quote-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--red);
+  }
+  .quote-text {
+    font-family: var(--font-fa);
+    font-size: 15px;
+    line-height: 2;
+    color: var(--white);
+    direction: rtl;
+    transition: opacity 0.3s;
+  }
+  .quote-refresh {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--red); margin-top: 16px; letter-spacing: 2px;
+  }
+
+  /* ─── SECTION TITLE ─── */
+  .section-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 36px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 6vw, 52px);
+    color: var(--white);
+    letter-spacing: 2px;
+  }
+  .section-title span { color: var(--red); }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--red), transparent);
+  }
+
+  /* ─── CHANNEL CARDS ─── */
+  .channels-section { padding: 60px 0; }
+  .channels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .channel-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 22px;
+    display: flex; align-items: center; gap: 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .channel-card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--red-glow), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .channel-card:hover { border-color: var(--red); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(232,0,13,0.15); }
+  .channel-card:hover::after { opacity: 1; }
+
+  .channel-card.featured {
+    grid-column: 1 / -1;
+    padding: 30px;
+    border-color: var(--red-dim);
+  }
+  .channel-card.featured .ch-avatar { width: 72px; height: 72px; font-size: 28px; }
+
+  .ch-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--dark);
+    border: 2px solid var(--red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+    overflow: hidden;
+  }
+  .ch-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+  .ch-info { flex: 1; position: relative; z-index: 1; }
+  .ch-name {
+    font-family: var(--font-mono);
+    font-size: 13px; color: var(--white);
+    letter-spacing: 1px;
+  }
+  .ch-desc {
+    font-size: 13px; color: var(--text-dim);
+    margin-top: 4px; line-height: 1.6;
+    direction: rtl;
+  }
+  .ch-tag {
+    font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 2px;
+    background: var(--red);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-top: 8px;
+  }
+  .ch-arrow {
+    font-family: var(--font-mono);
+    color: var(--red); font-size: 18px;
+    transition: transform 0.2s;
+    position: relative; z-index: 1;
+  }
+  .channel-card:hover .ch-arrow { transform: translateX(-4px); }
+
+  /* ─── PERSONAL LINKS ─── */
+  .social-section { padding: 40px 0 60px; }
+  .social-grid { display: flex; gap: 16px; flex-wrap: wrap; }
+  .social-card {
+    flex: 1; min-width: 200px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 22px 28px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .social-card:hover { border-color: var(--red); transform: translateY(-2px); }
+  .social-icon { font-size: 24px; }
+  .social-name { font-family: var(--font-mono); font-size: 13px; color: var(--white); }
+  .social-handle { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  /* ─── THEME SWITCHER ─── */
+  .top-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px;
+    background: linear-gradient(180deg, var(--black) 0%, transparent 100%);
+  }
+  .top-logo {
+    font-family: var(--font-display);
+    font-size: 22px; color: var(--white);
+    letter-spacing: 3px;
+  }
+  .top-logo span { color: var(--red); }
+  .top-controls { display: flex; align-items: center; gap: 12px; }
+
+  .theme-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+  .theme-btn:hover { border-color: var(--red); color: var(--red); }
+  .theme-btn.active { border-color: var(--red); color: var(--red); }
+
+  /* ─── GAME SECTION ─── */
+  .game-section { padding: 60px 0; }
+  .game-wrapper {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .game-header {
+    background: var(--dark);
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .game-header-title {
+    font-family: var(--font-mono); font-size: 13px;
+    color: var(--red); letter-spacing: 2px;
+  }
+  .game-score-display {
+    font-family: var(--font-display); font-size: 24px;
+    color: var(--white);
+  }
+  .game-area {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px;
+    gap: 16px;
+  }
+  #gameCanvas {
+    border: 1px solid var(--red);
+    border-radius: 2px;
+    background: #000;
+    image-rendering: pixelated;
+    max-width: 100%;
+    box-shadow: 0 0 20px var(--red-glow);
+  }
+  .game-controls {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  }
+  .game-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 20px;
+    font-family: var(--font-mono); font-size: 11px;
+    cursor: pointer; border-radius: 2px;
+    transition: all 0.2s; letter-spacing: 2px;
+  }
+  .game-btn:hover, .game-btn.active { border-color: var(--red); color: var(--red); }
+  .game-hint {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--text-dim); text-align: center;
+    letter-spacing: 1px;
+  }
+  .d-pad {
+    display: grid;
+    grid-template-areas: ". up ." "left . right" ". down .";
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .d-btn {
+    width: 44px; height: 44px;
+    background: var(--dark); border: 1px solid var(--border);
+    color: var(--white); font-size: 18px;
+    cursor: pointer; border-radius: 4px;
+    transition: all 0.1s; display: flex; align-items: center; justify-content: center;
+    user-select: none;
+  }
+  .d-btn:active, .d-btn.pressed { background: var(--red); border-color: var(--red); }
+  .d-up{grid-area:up} .d-left{grid-area:left} .d-right{grid-area:right} .d-down{grid-area:down}
+
+  /* ─── EASTER EGG ─── */
+  .egg-trigger {
+    position: fixed; bottom: 20px; left: 20px;
+    width: 10px; height: 10px;
+    background: transparent;
+    cursor: pointer;
+    z-index: 200;
+  }
+  .egg-modal {
+    display: none;
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.9);
+    align-items: center; justify-content: center;
+  }
+  .egg-modal.show { display: flex; }
+  .egg-box {
+    background: var(--card);
+    border: 1px solid var(--red);
+    padding: 40px;
+    max-width: 500px; width: 90%;
+    text-align: center;
+    font-family: var(--font-mono);
+    animation: fadeUp 0.4s ease;
+    border-radius: 4px;
+    box-shadow: 0 0 60px var(--red-glow);
+  }
+  .egg-title { font-family: var(--font-display); font-size: 48px; color: var(--red); margin-bottom: 16px; }
+  .egg-text { color: var(--text); font-size: 13px; line-height: 2; direction: rtl; font-family: var(--font-fa); }
+  .egg-close {
+    margin-top: 24px;
+    background: var(--red); border: none;
+    color: #fff; padding: 10px 24px;
+    font-family: var(--font-display); font-size: 18px;
+    cursor: pointer; border-radius: 2px; letter-spacing: 2px;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 30px 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px; color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+  footer span { color: var(--red); }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ─── CURSOR TRAIL ─── */
+  .cursor-dot {
+    width: 6px; height: 6px;
+    background: var(--red);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.1s;
+  }
+
+  /* ─── MOBILE ─── */
+  @media(max-width:480px) {
+    .top-controls { gap: 6px; }
+    .theme-btn { padding: 6px 10px; font-size: 10px; }
+    .game-area { padding: 12px; }
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<!-- BG Canvas -->
+<canvas id="bg-canvas"></canvas>
+<div class="noise"></div>
+
+<!-- Cursor dot -->
+<div class="cursor-dot" id="cursor"></div>
+
+<!-- Easter egg trigger -->
+<div class="egg-trigger" id="eggTrigger" title="..."></div>
+
+<!-- Easter egg modal -->
+<div class="egg-modal" id="eggModal">
+  <div class="egg-box">
+    <div class="egg-title">// FOUND IT</div>
+    <p class="egg-text">
+      هر سیستمی یه ضعف مخفی داره.<br>
+      تو پیداش کردی 🎯<br><br>
+      <strong style="color:var(--red)">FRIDAY OS</strong> همیشه در حال بروزرسانیه.<br>
+      بزن به چنل‌ها تا اول باخبر بشی.
+    </p>
+    <button class="egg-close" id="eggClose">CLOSE //</button>
+  </div>
+</div>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="top-logo">FRI<span>DAY</span></div>
+  <div class="top-controls">
+    <button class="theme-btn active" id="themeDay">☀ LIGHT</button>
+    <button class="theme-btn" id="themeNight">◉ DARK</button>
+    <button class="theme-btn" id="themeRed">⚡ BLOOD</button>
+  </div>
+</div>
+
+<!-- Hero -->
+<header>
+  <div class="wrapper">
+    <div class="logo-badge"><div class="dot"></div> SYSTEM ONLINE // v2.0.25</div>
+    <h1 class="glitch hero-title" data-text="FRIDAY OS">FRIDAY <span>OS</span></h1>
+    <p class="hero-sub">Ecosystem · اکوسیستم دیجیتال</p>
+    <p class="hero-desc">یک هاب مرکزی برای کسایی که می‌خوان اطلاعات بهتری داشته باشن، کمتر وقت هدر بدن، و بیشتر رشد کنن.</p>
+    <div class="hero-cta">
+      <a href="https://t.me/FridayOS" target="_blank" class="btn-primary">ورود به قلب پروژه →</a>
+      <button class="btn-ghost" onclick="document.getElementById('channels').scrollIntoView({behavior:'smooth'})">کانال‌ها</button>
+    </div>
+  </div>
+  <div class="scroll-hint">▼ SCROLL DOWN ▼</div>
+</header>
+
+<!-- Live Bar -->
+<div class="live-bar">
+  <div class="live-bar-inner" id="liveBar">
+    <span>◉ LIVE</span> FRIDAY OS <span>//</span> اطلاعات لحظه‌ای <span>//</span> بازار <span>//</span> پروکسی <span>//</span> نقل‌قول روز <span>//</span>
+    <span>◉ LIVE</span> FRIDAY OS <span>//</span> اطلاعات لحظه‌ای <span>//</span> بازار <span>//</span> پروکسی <span>//</span> نقل‌قول روز <span>//</span>
+  </div>
+</div>
+
+<!-- Clock + Quote -->
+<section class="clock-section">
+  <div class="wrapper">
+    <div class="clock-grid reveal">
+      <div class="clock-card">
+        <div class="clock-label">// SYSTEM TIME</div>
+        <div class="clock-time" id="clockTime">00:00:00</div>
+        <div class="clock-date" id="clockDate">---</div>
+        <div style="margin-top:12px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim)" id="perDate"></div>
+      </div>
+      <div class="quote-card" onclick="newQuote()" title="کلیک برای نقل‌قول جدید">
+        <div>
+          <div class="clock-label">// QUOTE OF THE MOMENT — کلیک کن</div>
+          <div class="quote-text" id="quoteText">در حال بارگذاری...</div>
+        </div>
+        <div class="quote-refresh">↻ REFRESH QUOTE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Channels -->
+<section class="channels-section" id="channels">
+  <div class="wrapper">
+    <div class="section-header reveal">
+      <div class="section-title">CHAN<span>NELS</span></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="channels-grid">
+
+      <!-- Featured -->
+      <a class="channel-card featured reveal" href="https://t.me/FridayOS" target="_blank">
+        <div class="ch-avatar">
+          <img src="https://ui-avatars.com/api/?name=F&background=e8000d&color=fff&size=128&bold=true" alt="FRIDAY OS" onerror="this.parentElement.innerHTML='🖤'">
+        </div>
+        <div class="ch-info">
+          <div class="ch-name">FRIDAY • OS</div>
+          <div class="ch-desc">قلب پروژه — مرکز اصلی محتوا، اخبار و بروزرسانی‌های اکوسیستم FRIDAY</div>
+          <div class="ch-tag">CORE CHANNEL</div>
+        </div>
+        <div class="ch-arrow">←</div>
+      </a>
+
+      <a class="channel-card reveal" href="https://t.me/HamiWorkHQ" target="_blank">
+        <div class="ch-avatar">
+          <img src="https://ui-avatars.com/api/?name=H&background=8b0008&color=fff&size=128&bold=true" alt="HamiWork" onerror="this.parentElement.innerHTML='💼'">
+        </div>
+        <div class="ch-info">
+          <div class="ch-name">HamiWork • حامی‌ورک</div>
+          <div class="ch-desc">محتوای کار و توسعه فردی</div>
+          <div class="ch-tag">WORK</div>
+        </div>
+        <div class="ch-arrow">←</div>
+      </a>
+
+      <a class="channel-card reveal" href="https://t.me/fridayProxy" target="_blank">
+        <div class="ch-avatar">
+          <img src="https://ui-avatars.com/api/?name=P&background=e8000d&color=fff&size=128&bold=true" alt="FRIDAY Proxy" onerror="this.parentElement.innerHTML='🔒'">
+        </div>
+        <div class="ch-info">
+          <div class="ch-name">FRIDAY • ProXy</div>
+          <div class="ch-desc">پروکسی و فیلترشکن رایگان</div>
+          <div class="ch-tag">PROXY</div>
+        </div>
+        <div class="ch-arrow">←</div>
+      </a>
+
+      <a class="channel-card reveal" href="https://t.me/FRIDAYQuotes" target="_blank">
+        <div class="ch-avatar">
+          <img src="https://ui-avatars.com/api/?name=Q&background=4a0004&color=e8000d&size=128&bold=true" alt="FRIDAY Quotes" onerror="this.parentElement.innerHTML='💬'">
+        </div>
+        <div class="ch-info">
+          <div class="ch-name">FRIDAY • نقل قول روز</div>
+          <div class="ch-desc">نقل‌قول‌های روزانه الهام‌بخش</div>
+          <div class="ch-tag">QUOTES</div>
+        </div>
+        <div class="ch-arrow">←</div>
+      </a>
+
+      <a class="channel-card reveal" href="https://t.me/FRIDAYLiveMarke3t" target="_blank">
+        <div class="ch-avatar">
+          <img src="https://ui-avatars.com/api/?name=M&background=e8000d&color=fff&size=128&bold=true" alt="FRIDAY Market" onerror="this.parentElement.innerHTML='📈'">
+        </div>
+        <div class="ch-info">
+          <div class="ch-name">FRIDAY • Live Market</div>
+          <div class="ch-desc">داده‌های لحظه‌ای بازار و قیمت‌ها</div>
+          <div class="ch-tag">MARKET</div>
+        </div>
+        <div class="ch-arrow">←</div>
+      </a>
+
+      <a class="channel-card reveal" href="https://t.me/MeyarAnalytics" target="_blank">
+        <div class="ch-avatar">
+          <img src="https://ui-avatars.com/api/?name=M&background=2a0002&color=e8000d&size=128&bold=true" alt="Meyar" onerror="this.parentElement.innerHTML='📊'">
+        </div>
+        <div class="ch-info">
+          <div class="ch-name">Me'yar • معیار</div>
+          <div class="ch-desc">تحلیل و آنالیتیکس</div>
+          <div class="ch-tag">ANALYTICS</div>
+        </div>
+        <div class="ch-arrow">←</div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- Social Links -->
+<section class="social-section">
+  <div class="wrapper">
+    <div class="section-header reveal">
+      <div class="section-title">CON<span>NECT</span></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="social-grid reveal">
+      <a class="social-card" href="https://t.me/Ha3edx" target="_blank">
+        <div class="social-icon">✈</div>
+        <div>
+          <div class="social-name">TELEGRAM</div>
+          <div class="social-handle">@Ha3edx</div>
+        </div>
+      </a>
+      <a class="social-card" href="https://x.com/HamedIdeas" target="_blank">
+        <div class="social-icon">✕</div>
+        <div>
+          <div class="social-name">TWITTER / X</div>
+          <div class="social-handle">@HamedIdeas</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Snake Game -->
+<section class="game-section" id="game">
+  <div class="wrapper">
+    <div class="section-header reveal">
+      <div class="section-title">SNA<span>KE</span></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="game-wrapper reveal">
+      <div class="game-header">
+        <div class="game-header-title">// FRIDAY_SNAKE.exe</div>
+        <div>SCORE: <span class="game-score-display" id="scoreDisplay">0</span></div>
+      </div>
+      <div class="game-area">
+        <canvas id="gameCanvas" width="360" height="360"></canvas>
+        <div class="game-controls">
+          <button class="game-btn" id="startBtn" onclick="startGame()">▶ START</button>
+          <button class="game-btn" onclick="pauseGame()">⏸ PAUSE</button>
+          <button class="game-btn" onclick="resetGame()">↺ RESET</button>
+        </div>
+        <div class="game-hint">↑ ↓ ← → برای حرکت — یا از D-Pad موبایل استفاده کن</div>
+        <div class="d-pad">
+          <button class="d-btn d-up" ontouchstart="setDir(0,-1)" onmousedown="setDir(0,-1)">▲</button>
+          <button class="d-btn d-left" ontouchstart="setDir(-1,0)" onmousedown="setDir(-1,0)">◄</button>
+          <button class="d-btn d-right" ontouchstart="setDir(1,0)" onmousedown="setDir(1,0)">►</button>
+          <button class="d-btn d-down" ontouchstart="setDir(0,1)" onmousedown="setDir(0,1)">▼</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="wrapper">
+    <p>FRIDAY OS // <span>2025</span> // Built with ❤ and ⚡</p>
+    <p style="margin-top:8px; color:var(--text-dim)">All systems operational.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── BG CANVAS — GRID + PARTICLES ─── */
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles=[];
+
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor(){
+      this.x = Math.random()*W;
+      this.y = Math.random()*H;
+      this.vy = -Math.random()*0.5 - 0.2;
+      this.size = Math.random()*1.5 + 0.3;
+      this.alpha = Math.random()*0.5 + 0.1;
+    }
+    update(){
+      this.y += this.vy;
+      if(this.y < -10) { this.y = H+10; this.x = Math.random()*W; }
+    }
+    draw(){
+      ctx.globalAlpha = this.alpha;
+      ctx.fillStyle = '#e8000d';
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  for(let i=0;i<80;i++) particles.push(new Particle());
+
+  function drawGrid(){
+    const isDark = document.body.dataset.theme !== 'light';
+    ctx.strokeStyle = isDark ? 'rgba(232,0,13,0.04)' : 'rgba(232,0,13,0.06)';
+    ctx.lineWidth = 1;
+    const gs = 60;
+    for(let x=0;x<W;x+=gs){
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+    }
+    for(let y=0;y<H;y+=gs){
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    }
+  }
+
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    ctx.globalAlpha = 1;
+    drawGrid();
+    particles.forEach(p=>{ p.update(); p.draw(); });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ─── CURSOR ─── */
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e=>{
+  cursor.style.left = (e.clientX-3)+'px';
+  cursor.style.top = (e.clientY-3)+'px';
+});
+
+/* ─── THEME ─── */
+const themes = {
+  day: { theme:'light', label:'☀ LIGHT' },
+  night: { theme:'dark', label:'◉ DARK' },
+  red: { theme:'blood', label:'⚡ BLOOD' }
+};
+
+// Blood theme extra vars
+const bloodStyle = document.createElement('style');
+bloodStyle.id = 'bloodTheme';
+bloodStyle.textContent = `
+  [data-theme="blood"] {
+    --black: #0a0000;
+    --dark: #120000;
+    --card: #1a0000;
+    --border: #3a0008;
+    --text: #e8a0a5;
+    --text-dim: #6a2030;
+    --white: #ffe0e0;
+    --red-glow: #ff000066;
+  }
+`;
+document.head.appendChild(bloodStyle);
+
+document.getElementById('themeDay').onclick = ()=>setTheme('light','themeDay');
+document.getElementById('themeNight').onclick = ()=>setTheme('dark','themeNight');
+document.getElementById('themeRed').onclick = ()=>setTheme('blood','themeRed');
+
+function setTheme(t, activeId){
+  document.body.dataset.theme = t;
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(activeId).classList.add('active');
+}
+
+/* ─── CLOCK ─── */
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clockTime').textContent = `${h}:${m}:${s}`;
+
+  const days = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('clockDate').textContent =
+    `${days[now.getDay()]} — ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  // Persian date
+  try {
+    const pf = new Intl.DateTimeFormat('fa-IR', {dateStyle:'full'});
+    document.getElementById('perDate').textContent = pf.format(now);
+  } catch(e){}
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ─── QUOTES ─── */
+const quotes = [
+  "«آینده از آنِ کسانی است که به فردای خود ایمان دارند.» — Eleanor Roosevelt",
+  "«اگر می‌خواهی متفاوت نتیجه بگیری، متفاوت عمل کن.» — Albert Einstein",
+  "«بزرگ‌ترین خطر، هیچ خطری نکردن است.» — Mark Zuckerberg",
+  "«ایده‌ها ارزان هستند. اجرا گران‌بها.» — Guy Kawasaki",
+  "«موفقیت یعنی از شکست به شکست رفتن بدون از دست دادن اشتیاق.» — Churchill",
+  "«کد خوب مثل شعر خوب است — کوتاه، واضح، و قوی.» — Anonymous",
+  "«جهان از کسانی ساخته می‌شود که می‌گویند: من این کار را می‌کنم.» — Steve Jobs",
+  "«هر روز یه فرصت جدیدیه که دیروز نداشتی.» — FRIDAY OS",
+];
+
+function newQuote(){
+  const el = document.getElementById('quoteText');
+  el.style.opacity = 0;
+  setTimeout(()=>{
+    el.textContent = quotes[Math.floor(Math.random()*quotes.length)];
+    el.style.opacity = 1;
+  }, 200);
+}
+newQuote();
+
+/* ─── SCROLL REVEAL ─── */
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('visible'), i*80);
+    }
+  });
+}, {threshold:0.1});
+revealEls.forEach(el=>observer.observe(el));
+
+/* ─── EASTER EGG ─── */
+let clickCount = 0;
+document.getElementById('eggTrigger').addEventListener('click', ()=>{
+  clickCount++;
+  if(clickCount>=1) document.getElementById('eggModal').classList.add('show');
+});
+document.getElementById('eggClose').addEventListener('click', ()=>{
+  document.getElementById('eggModal').classList.remove('show');
+});
+
+// Konami code
+let konamiSeq = [];
+const konamiCode = [38,38,40,40,37,39,37,39,66,65];
+document.addEventListener('keydown', e=>{
+  konamiSeq.push(e.keyCode);
+  konamiSeq = konamiSeq.slice(-10);
+  if(konamiSeq.join(',')===konamiCode.join(','))
+    document.getElementById('eggModal').classList.add('show');
+});
+
+/* ─── SNAKE GAME ─── */
+const gc = document.getElementById('gameCanvas');
+const gctx = gc.getContext('2d');
+const CELL = 18;
+const COLS = Math.floor(gc.width/CELL);
+const ROWS = Math.floor(gc.height/CELL);
+
+let snake, dir, nextDir, food, score, gameLoop, running, paused;
+
+function initSnake(){
+  snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+  dir = {x:1,y:0};
+  nextDir = {x:1,y:0};
+  score = 0;
+  running = false;
+  paused = false;
+  placeFood();
+  drawGame();
+}
+
+function placeFood(){
+  do {
+    food = {x:Math.floor(Math.random()*COLS), y:Math.floor(Math.random()*ROWS)};
+  } while(snake.some(s=>s.x===food.x&&s.y===food.y));
+}
+
+function setDir(x,y){
+  if(x===1&&dir.x===-1) return;
+  if(x===-1&&dir.x===1) return;
+  if(y===1&&dir.y===-1) return;
+  if(y===-1&&dir.y===1) return;
+  nextDir={x,y};
+}
+
+document.addEventListener('keydown',e=>{
+  const map = {37:{x:-1,y:0},38:{x:0,y:-1},39:{x:1,y:0},40:{x:0,y:1},
+               65:{x:-1,y:0},87:{x:0,y:-1},68:{x:1,y:0},83:{x:0,y:1}};
+  if(map[e.keyCode]){ e.preventDefault(); setDir(map[e.keyCode].x,map[e.keyCode].y); }
+  if(e.keyCode===32){ paused?resumeGame():pauseGame(); }
+});
+
+function startGame(){
+  if(running) return;
+  initSnake();
+  running = true;
+  gameLoop = setInterval(tick, 130);
+}
+
+function pauseGame(){
+  if(!running||paused) return;
+  paused = true;
+  clearInterval(gameLoop);
+}
+function resumeGame(){
+  if(!paused) return;
+  paused = false;
+  gameLoop = setInterval(tick,130);
+}
+
+function resetGame(){
+  clearInterval(gameLoop);
+  initSnake();
+}
+
+function tick(){
+  dir = {...nextDir};
+  const head = {x:snake[0].x+dir.x, y:snake[0].y+dir.y};
+
+  // wall wrap
+  head.x = (head.x+COLS)%COLS;
+  head.y = (head.y+ROWS)%ROWS;
+
+  // self collision
+  if(snake.some(s=>s.x===head.x&&s.y===head.y)){
+    clearInterval(gameLoop);
+    running = false;
+    drawGameOver();
+    return;
+  }
+
+  snake.unshift(head);
+  if(head.x===food.x&&head.y===food.y){
+    score += 10;
+    document.getElementById('scoreDisplay').textContent = score;
+    placeFood();
+  } else {
+    snake.pop();
+  }
+  drawGame();
+}
+
+function drawGame(){
+  gctx.fillStyle = '#000';
+  gctx.fillRect(0,0,gc.width,gc.height);
+
+  // Grid
+  gctx.strokeStyle = 'rgba(232,0,13,0.07)';
+  gctx.lineWidth = 0.5;
+  for(let x=0;x<COLS;x++){
+    gctx.beginPath(); gctx.moveTo(x*CELL,0); gctx.lineTo(x*CELL,gc.height); gctx.stroke();
+  }
+  for(let y=0;y<ROWS;y++){
+    gctx.beginPath(); gctx.moveTo(0,y*CELL); gctx.lineTo(gc.width,y*CELL); gctx.stroke();
+  }
+
+  // Snake
+  snake.forEach((s,i)=>{
+    const alpha = 1 - (i/snake.length)*0.6;
+    gctx.fillStyle = i===0 ? '#ff0018' : `rgba(232,0,13,${alpha})`;
+    gctx.shadowColor = '#e8000d';
+    gctx.shadowBlur = i===0 ? 12 : 4;
+    gctx.fillRect(s.x*CELL+1, s.y*CELL+1, CELL-2, CELL-2);
+  });
+
+  // Food
+  gctx.shadowColor = '#ff0018';
+  gctx.shadowBlur = 15;
+  gctx.fillStyle = '#fff';
+  const fx = food.x*CELL+CELL/2;
+  const fy = food.y*CELL+CELL/2;
+  gctx.beginPath();
+  gctx.arc(fx, fy, CELL/2-3, 0, Math.PI*2);
+  gctx.fill();
+  gctx.shadowBlur = 0;
+
+  // Start hint
+  if(!running){
+    gctx.fillStyle = 'rgba(0,0,0,0.7)';
+    gctx.fillRect(0,0,gc.width,gc.height);
+    gctx.fillStyle = '#e8000d';
+    gctx.font = 'bold 22px "Share Tech Mono"';
+    gctx.textAlign = 'center';
+    gctx.fillText('PRESS START', gc.width/2, gc.height/2);
+  }
+}
+
+function drawGameOver(){
+  gctx.fillStyle = 'rgba(0,0,0,0.85)';
+  gctx.fillRect(0,0,gc.width,gc.height);
+  gctx.fillStyle = '#e8000d';
+  gctx.font = 'bold 28px "Bebas Neue"';
+  gctx.textAlign = 'center';
+  gctx.fillText('GAME OVER', gc.width/2, gc.height/2-20);
+  gctx.fillStyle = '#fff';
+  gctx.font = '16px "Share Tech Mono"';
+  gctx.fillText('SCORE: '+score, gc.width/2, gc.height/2+20);
+  gctx.fillStyle = '#888';
+  gctx.font = '12px "Share Tech Mono"';
+  gctx.fillText('PRESS START TO PLAY AGAIN', gc.width/2, gc.height/2+50);
+}
+
+// Touch swipe for game
+let tx=0,ty=0;
+gc.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+gc.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  const dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)){
+    setDir(dx>0?1:-1,0);
+  } else {
+    setDir(0,dy>0?1:-1);
+  }
+},{passive:true});
+
+initSnake();
+</script>
+</body>
+</html>
