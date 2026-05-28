@@ -75,7 +75,7 @@ body::after{
 .ld-logo span{color:#e8000d;}
 @keyframes ldPulse{0%,100%{text-shadow:0 0 20px rgba(232,0,13,.4)}50%{text-shadow:0 0 60px rgba(232,0,13,.9),0 0 120px rgba(232,0,13,.4)}}
 .ld-bar-wrap{width:320px;height:1px;background:#111;position:relative;overflow:visible;}
-.ld-bar{height:1px;width:0;background:#e8000d;animation:ldFill 1.4s ease forwards;box-shadow:0 0 8px #e8000d;}
+.ld-bar{height:1px;width:0;background:#e8000d;box-shadow:0 0 8px #e8000d;transition:width .05s linear;}
 @keyframes ldFill{0%{width:0}100%{width:100%}}
 .ld-pct{font-size:10px;color:#333;letter-spacing:4px;margin-top:8px;animation:ldCount 1.4s steps(100) forwards;}
 @keyframes ldCount{0%{content:'0%'}100%{content:'100%'}}
